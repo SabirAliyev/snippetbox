@@ -18,7 +18,7 @@ func home(w http.ResponseWriter, r *http.Request){
 	// template set. If there's an error, we log the detailed error message and use
 	// the http.Error() function to send a generic 500 Internal Server Error
 	// response to the user.
-	ts, err := template.ParseFiles("./ui/html/home.page.tmpl.html")
+	ts, err := template.ParseFiles("./ui/html/home.page.tmpl")
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
