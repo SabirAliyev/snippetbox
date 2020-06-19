@@ -9,13 +9,14 @@
             <strong>{{.Title}}</strong>
             <span>#{{.ID}}</span>
         </div>
-        <pre><code>{{.Snippet.Content}}</code></pre>
+        {{len nil}} <!-- Deliberate Error -->
+        <pre><code>{{.Content}}</code></pre>
         <div class='metadata'>
             <title>Created: {{.Created}}</title>
             <title>Expires: {{.Expires}}</title>
         </div>
+    </div>
     {{end}}
-</div>
 {{end}}
 
 

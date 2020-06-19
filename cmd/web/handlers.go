@@ -1,10 +1,9 @@
 package main
 
 import (
-	// "errors"
-	// "fmt"
-	"html/template"
+	"errors"
 	"net/http"
+	"sabiraliyev.net/snippetbox/pkg/models"
 	"strconv"
 
 	// "sabiraliyev.net/snippetbox/pkg/models"
@@ -25,36 +24,33 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	data := &templateData{Snippets: s}
-
-	files := []string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	// Parse the template files...
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// Add and then execute them. Notice how we are passing in the snippet
-	// data (a model.Snippet struct) as the final parameter.
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
-
+	// Use the new render helper.
+	app.render(w, r, "home.page.tmpl", &templateData{
+		Snippets: s,
+	})
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		app.notFound(w)		// Use the notFound() helper.
+		app.notFound(w)
 		return
 	}
+
+	s, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNorecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// Use the new render helper.
+	app.render(w, r, "show.page.tmpl", &templateData{
+		Snippet: s,
+	})
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request){
