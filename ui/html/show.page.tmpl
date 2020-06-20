@@ -11,8 +11,9 @@
         </div>
         <pre><code>{{.Content}}</code></pre>
         <div class='metadata'>
-            <title>Created: {{.Created}}</title>
-            <title>Expires: {{.Expires}}</title>
+            <!-- Use the new template function here. -->
+            <title>Created: {{humanDate .Created}}</title>
+            <title>Expires: {{humanDate .Expires}}</title>
         </div>
     </div>
     {{end}}
