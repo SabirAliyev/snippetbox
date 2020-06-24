@@ -1,10 +1,14 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+	"github.com/justinas/alice" // New import
+)
 
-// Update the signature for the routes() method so that it returns a
-// http.Handler instead of *http.ServeMux.
 func (app *application) routes() http.Handler{
+	// Create a middleware chain containing our 'standard' middleware
+	// which will be used for every request our application receives.
+	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc("/snippet", app.showSnippet)
@@ -13,7 +17,7 @@ func (app *application) routes() http.Handler{
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
-	// Wrap the existing chain with the recoverPanic middleware>
-	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
+	// Return the 'standart' middlewate chain followed by the servemux.
+	return standardMiddleware.Then(mux)
 }
 
