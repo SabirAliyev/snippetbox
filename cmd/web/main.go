@@ -47,13 +47,10 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
-	// Use the sessions.New() function to initialize a new session manager,
-	// passing in the secret key as the parameter. Then we configure it so
-	// session always expires after 12 hours.
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
+	session.Secure = true // Set the secure flag on our session cookies.
 
-	// And add the session manager to our application dependencies.
 	app := &application{
 		errorLog: 	errorLog,
 		infoLog: 	infoLog,
@@ -69,7 +66,10 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err = srv.ListenAndServe()
+	// Use the ListenAndServeTLS() method to start the HTTPS server.
+	// We pass in the path to the TLS certificate and corresponding private key as
+	// the two parameters.
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
 
