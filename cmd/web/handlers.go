@@ -34,12 +34,20 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, models.ErrNorecord) {
 			app.notFound(w)
 		} else {
-
+			app.serverError(w, err)
 		}
 		return
 	}
 
+	// Use the PopString() method to retrieve the value for the "flash" key.
+	// PopString() also deletes the key and value from the session data, so it
+	// acts like a one-time fetch. If there is no matching key in the session
+	// data this will return the empty string.
+	flash := app.session.PopString(r, "flash")
+
+	// Pass the flash message to the template
 	app.render(w, r, "show.page.tmpl", &templateData{
+		Flash: flash,
 		Snippet: s,
 	})
 }
@@ -58,8 +66,6 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// Create  a new form.Form struct containing the POSTed data from the
-	// form, then use the validation method to check the content.
 	form := forms.New(r.PostForm)
 	form.Required("title", "content", "expires")
 	form.MaxLength("title", 100)
@@ -72,14 +78,18 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// Because the form data (with type url.Values) has been anonymously embedded
-	// in the form.Form struct, we can use the Get() method to retrieve
-	// the validated value for a particular form field.
 	id, err := app.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
+
+	// Use the Put() method to add a string value ("Your snippet was saved
+	// successfully!") and the corresponding key ("flash") to the session
+	// data. Note that if there's no existing session for the current user
+	// (or their session has expired) then a new, empty, session for them
+	// will automatically be created by the session middleware.
+	app.session.Put(r, "flash", "Snippet successfully created!")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
