@@ -17,10 +17,10 @@ import (
 
 // Add new session filed to the application struct.
 type application struct {
-	errorLog *log.Logger
-	infoLog *log.Logger
-	session *sessions.Session
-	snippets *mysql.SnippetModel
+	errorLog 	*log.Logger
+	infoLog 	*log.Logger
+	session 	*sessions.Session
+	snippets 	*mysql.SnippetModel
 	templateCache map[string]*template.Template
 }
 
@@ -55,10 +55,10 @@ func main() {
 
 	// And add the session manager to our application dependencies.
 	app := &application{
-		errorLog: errorLog,
-		session: session,
-		infoLog: infoLog,
-		snippets: &mysql.SnippetModel{DB: db},
+		errorLog: 	errorLog,
+		infoLog: 	infoLog,
+		session: 	session,
+		snippets: 	&mysql.SnippetModel{DB: db},
 		templateCache: templateCache,
 	}
 
