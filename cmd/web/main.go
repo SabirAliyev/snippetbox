@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"html/template"
@@ -59,16 +60,24 @@ func main() {
 		templateCache: templateCache,
 	}
 
+	tlsConfig := &tls.Config{
+		PreferServerCipherSuites: true,
+		CurvePreferences:		[]tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
+	// Set the server`s TLSConfig field to use the tlsConfig variable we just created.
 	srv := &http.Server{
-		Addr: 	*addr,
-		ErrorLog: errorLog,
-		Handler: app.routes(),
+		Addr:			*addr,
+		ErrorLog: 		errorLog,
+		Handler: 		app.routes(),
+		TLSConfig: 		tlsConfig,
+		// Add Idle, Read and Write timeouts to the server.
+		IdleTimeout: 	time.Minute,
+		ReadTimeout: 	5 * time.Second,
+		WriteTimeout: 	10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	// Use the ListenAndServeTLS() method to start the HTTPS server.
-	// We pass in the path to the TLS certificate and corresponding private key as
-	// the two parameters.
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
