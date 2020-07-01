@@ -46,7 +46,6 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request){
 	app.render(w, r, "create.page.tmpl", &templateData{
-		// Pass a new empty forms.Form object to the template.
 		Form: forms.New(nil),
 	})
 }
@@ -63,8 +62,6 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request){
 	form.MaxLength("title", 100)
 	form.PermittedValue("expires", "365", "7", "1")
 
-	// If the form isn`t valid, redisplay the template passing in the
-	// form.Form object as the data.
 	if !form.Valid() {
 		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
 		return
@@ -76,12 +73,31 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// Use the Put() method to add a string value ("Your snippet was saved
-	// successfully!") and the corresponding key ("flash") to the session
-	// data. Note that if there's no existing session for the current user
-	// (or their session has expired) then a new, empty, session for them
-	// will automatically be created by the session middleware.
 	app.session.Put(r, "flash", "Snippet successfully created!")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
+
+func (app *application) signupUserForm(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintln(w, "Display the user signup form...")
+}
+
+func (app *application) signupUser(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintln(w, "Create a new user...")
+}
+
+func (app *application) loginUserForm(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintln(w, "Display the user login form...")
+}
+
+func (app *application) loginUser(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintln(w, "Authenticate and login the user...")
+}
+
+func (app *application) logoutUser(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintln(w, "Logout the user...")
+}
+
+
+
+
