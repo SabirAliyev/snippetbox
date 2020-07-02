@@ -43,7 +43,7 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 		// error specifically, and return our own models.ErrNoRecord error
 		// instead.
 		if errors.Is(err, sql.ErrNoRows){
-			return nil, models.ErrNorecord
+			return nil, models.ErrNoRecord
 		} else {
 			return nil, err
 		}

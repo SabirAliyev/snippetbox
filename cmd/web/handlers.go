@@ -31,7 +31,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	s, err := app.snippets.Get(id)
 	if err != nil {
-		if errors.Is(err, models.ErrNorecord) {
+		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
 		} else {
 			app.serverError(w, err)
@@ -79,7 +79,9 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request){
 }
 
 func (app *application) signupUserForm(w http.ResponseWriter, r *http.Request){
-	fmt.Fprintln(w, "Display the user signup form...")
+	app.render(w, r, "signup.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) signupUser(w http.ResponseWriter, r *http.Request){
