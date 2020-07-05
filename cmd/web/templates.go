@@ -9,7 +9,9 @@ import (
 	"sabiraliyev.net/snippetbox/pkg/models"
 )
 
+// Add a new CSRFToken field to the templateData
 type templateData struct {
+	CSRFToken 			string
 	CurrentYear 		int
 	Flash 				string
 	Form 				*forms.Form

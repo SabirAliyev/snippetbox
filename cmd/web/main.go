@@ -52,6 +52,12 @@ func main() {
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
+	// By default the golangcollege/sessions package that we’re using always sets SameSite=Lax
+	// on the session cookie. This means that the session cookie won’t be sent by the user’s
+	// browser for cross-site usage (apart from when the usage is deemed to be a safe request
+	// which doesn’t change the state of the target application), thereby cutting down the risk of a
+	// CSRF attack.
+	session.SameSite = http.SameSiteDefaultMode
 
 	// Initialize a mysql.UserModel instance and add it to the application dependencies.
 	app := &application{
