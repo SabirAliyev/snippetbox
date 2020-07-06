@@ -16,7 +16,10 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
-// Add new session filed to the application struct.
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 type application struct {
 	errorLog 	*log.Logger
 	infoLog 	*log.Logger
@@ -30,8 +33,6 @@ func main() {
 
 	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	// Define a new  command-line flag for the session secret (a random key
-	// which will be used to encrypt and authenticate session cookies). It should be 32 bytes long.
 	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
 	flag.Parse()
 
@@ -52,14 +53,8 @@ func main() {
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
-	// By default the golangcollege/sessions package that we’re using always sets SameSite=Lax
-	// on the session cookie. This means that the session cookie won’t be sent by the user’s
-	// browser for cross-site usage (apart from when the usage is deemed to be a safe request
-	// which doesn’t change the state of the target application), thereby cutting down the risk of a
-	// CSRF attack.
 	session.SameSite = http.SameSiteDefaultMode
 
-	// Initialize a mysql.UserModel instance and add it to the application dependencies.
 	app := &application{
 		errorLog: 	errorLog,
 		infoLog: 	infoLog,
