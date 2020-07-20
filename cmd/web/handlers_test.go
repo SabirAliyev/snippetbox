@@ -81,13 +81,13 @@ func TestSignupUser(t *testing.T) {
 		wantBody		[]byte
 	}{
 		{"Valid submission", "Bob", "bob@example.com", "validPa$$word", csrfToken, http.StatusSeeOther, nil},
-		{"Empty name", "", "bob@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
-		{"Empty email", "Bob", "", "validPa$$word", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
-		{"Empty password", "Bob", "bob@example.com", "", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
-		{"Invalid email (incomplete domain)", "Bob", "bob@example.", "validPa$$word", csrfToken, http.StatusOK, []byte("This field is invalid")},
-		{"Invalid email (missing @)", "Bob", "bobexample.com", "validPa$$word", csrfToken, http.StatusOK, []byte("This field is invalid")},
-		{"Invalid email (missing local part)", "Bob", "@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("This field is invalid")},
-		{"Short password", "Bob", "bob@example.com", "pa$$word", csrfToken, http.StatusOK, []byte("This field is too short (minimum is 10 characters")},
+		{"Empty name", "", "bob@example.com", "validPa$$word", csrfToken, http.StatusSeeOther, []byte("This field cannot be blank")},
+		{"Empty email", "Bob", "", "validPa$$word", csrfToken, http.StatusSeeOther, []byte("This field cannot be blank")},
+		{"Empty password", "Bob", "bob@example.com", "", csrfToken, http.StatusSeeOther, []byte("This field cannot be blank")},
+		{"Invalid email (incomplete domain)", "Bob", "bob@example.", "validPa$$word", csrfToken, http.StatusSeeOther, []byte("This field is invalid")},
+		{"Invalid email (missing @)", "Bob", "bobexample.com", "validPa$$word", csrfToken, http.StatusSeeOther, []byte("This field is invalid")},
+		{"Invalid email (missing local part)", "Bob", "@example.com", "validPa$$word", csrfToken, http.StatusSeeOther, []byte("This field is invalid")},
+		{"Short password", "Bob", "bob@example.com", "pa$$word", csrfToken, http.StatusSeeOther, []byte("This field is too short (minimum is 10 characters")},
 		{"Duplicate email", "Bob", "dupe@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("Address is already in use")},
 		{"Invalid CSRF Token", "", "", "", "wrongToken", http.StatusBadRequest, nil},
 	}
