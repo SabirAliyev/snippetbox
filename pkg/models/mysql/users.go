@@ -74,7 +74,8 @@ func (m *UserModel) Get(id int) (*models.User, error) {
 
 	stmt := `
 	SELECT id, name, email, created, active 
-	FROM users`
+	FROM users
+	WHERE id = $1`
 
 	err := m.DB.QueryRow(stmt, id).Scan(&u.ID, &u.Name, &u.Email, &u.Created, &u.Active)
 	if err != nil {

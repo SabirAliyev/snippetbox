@@ -17,8 +17,6 @@ type SnippetModel struct {
 // This will insert a new snippet into the database.
 func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 
-	// Write the SQL statement we want to execute. Again, We've split it over two
-	// lines for readability.
 	stmt := `
 	SELECT id, title, content, created, expires 
 	FROM snippets 
@@ -56,13 +54,13 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 	return s, nil
 }
 
-// This will return the 10 most recently created snippets.
+	// This will return the 10 most recently created snippets.
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
 	// Write the SQL statement we want to execute.
 	stmt := `
 	SELECT id, title, content, created, expires 
 	FROM snippets 
-	ORDER BY created DESC LIMIT 10`
+	ORDER BY expires <= NOW() + '1 week', created DESC LIMIT 10`
 
 	// Use the Query() method on the connection pool to execute our
 	// SQL statement. This returns a sql.Rows result set containing the result of
@@ -118,30 +116,10 @@ func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
 }
 
 func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
-	// Write the SQL statement we want to execute. I've split it over two lines
-	// for readability (which is why it's surrounded with backquotes instead
-	// of normal double quotes).
+	// Write the SQL statement we want to execute.
 	query := `
 	INSERT INTO snippets (title, content, created, expires) 
-	VALUES($1, $2, now(), '1 week') RETURNING id`
-
-	// Use the Exec() method on the embedded connection pool to execute the
-	// statement. The first parameter is the SQL statement, followed by the
-	// title, content and expiry values for the placeholder parameters. This
-	// method returns a sql.Result object, which contains some basic
-	// information about what happened when the statement was executed.
-	//result, err := m.DB.Exec(stmt, title, content, expires)
-	//if err != nil {
-	//	return 0, err
-	//}
-	//// Use the LastInsertId() method on the result object to get the ID of our
-	//// newly inserted record in the snippets table.
-	//id, err := result.LastInsertId()
-	//if err != nil {
-	//	return 0, err
-	//}
-	// The ID returned has the type int64, so we convert it to an int type
-	// before returning.
+	VALUES($1, $2, now(), now() + interval '1 day' * $3) RETURNING id`
 
 	stmt, err := m.DB.Prepare(query)
 	if err != nil{
@@ -150,7 +128,7 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 	defer stmt.Close()
 
 	var id int
-	err = stmt.QueryRow(title, content).Scan(id)
+	err = stmt.QueryRow(title, content, expires).Scan(&id)
 	if err != nil {
 		log.Fatal(err)
 	}

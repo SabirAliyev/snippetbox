@@ -16,6 +16,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
 		app.serverError(w, err)
 		return
 	}
+	// --
+	fmt.Println(err)
 
 	app.render(w, r, "home.page.tmpl", &templateData{
 		Snippets: s,
