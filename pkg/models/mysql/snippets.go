@@ -3,9 +3,10 @@ package mysql
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"sabiraliyev.net/snippetbox/pkg/models"
 
-	_ "sabiraliyev.net/snippetbox/pkg/models"
+	// _ "sabiraliyev.net/snippetbox/pkg/models"
 )
 
 // Define a SnippetModel type which wraps a sql.DB connection pool.
@@ -18,8 +19,10 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 
 	// Write the SQL statement we want to execute. Again, We've split it over two
 	// lines for readability.
-	stmt := `SELECT id, title, content, created, expires FROM snippets
-	WHERE expires > UTC_TIMESTAMP() AND id = ?`
+	stmt := `
+	SELECT id, title, content, created, expires 
+	FROM snippets 
+	WHERE id = $1`
 
 	// Use the QueryRow() method on the connection pool to execute our
 	// SQL statement, passing in the untrusted id variable as the value for the
@@ -56,8 +59,10 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 // This will return the 10 most recently created snippets.
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
 	// Write the SQL statement we want to execute.
-	stmt := `SELECT id, title, content, created, expires FROM snippets
-	WHERE expires > UTC_TIMESTAMP() ORDER BY created DESC LIMIT 10`
+	stmt := `
+	SELECT id, title, content, created, expires 
+	FROM snippets 
+	ORDER BY created DESC LIMIT 10`
 
 	// Use the Query() method on the connection pool to execute our
 	// SQL statement. This returns a sql.Rows result set containing the result of
@@ -116,24 +121,39 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 	// Write the SQL statement we want to execute. I've split it over two lines
 	// for readability (which is why it's surrounded with backquotes instead
 	// of normal double quotes).
-	stmt := `INSERT INTO snippets (title, content, created, expires)
-	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))`
+	query := `
+	INSERT INTO snippets (title, content, created, expires) 
+	VALUES($1, $2, now(), '1 week') RETURNING id`
+
 	// Use the Exec() method on the embedded connection pool to execute the
 	// statement. The first parameter is the SQL statement, followed by the
 	// title, content and expiry values for the placeholder parameters. This
 	// method returns a sql.Result object, which contains some basic
 	// information about what happened when the statement was executed.
-	result, err := m.DB.Exec(stmt, title, content, expires)
-	if err != nil {
-		return 0, err
-	}
-	// Use the LastInsertId() method on the result object to get the ID of our
-	// newly inserted record in the snippets table.
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
+	//result, err := m.DB.Exec(stmt, title, content, expires)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//// Use the LastInsertId() method on the result object to get the ID of our
+	//// newly inserted record in the snippets table.
+	//id, err := result.LastInsertId()
+	//if err != nil {
+	//	return 0, err
+	//}
 	// The ID returned has the type int64, so we convert it to an int type
 	// before returning.
-	return int(id), nil
+
+	stmt, err := m.DB.Prepare(query)
+	if err != nil{
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	var id int
+	err = stmt.QueryRow(title, content).Scan(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return id, nil
 }

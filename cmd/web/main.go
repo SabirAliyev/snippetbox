@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,7 +14,8 @@ import (
 	"sabiraliyev.net/snippetbox/pkg/models"
 	"sabiraliyev.net/snippetbox/pkg/models/mysql"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+
 	"github.com/golangcollege/sessions"
 )
 
@@ -38,17 +40,28 @@ type application struct {
 	}
 }
 
+const (
+	host		= "localhost"
+	port		= 5432
+	user		= "web"
+	password	= "pass"
+	dbname		= "snippetbox"
+)
+
 func main() {
 
-	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
+	// dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
 	flag.Parse()
 
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	db, err := openDB(*dsn)
+	db, err := openDB("postgres", psqlInfo)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -93,8 +106,8 @@ func main() {
 	errorLog.Fatal(err)
 }
 
-func openDB(dsn string) (*sql.DB, error){
-	db, err := sql.Open("mysql", dsn)
+func openDB(dbName string, dsn string) (*sql.DB, error){
+	db, err := sql.Open(dbName, dsn)
 	if err != nil {
 		return nil, err
 	}
